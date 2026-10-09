@@ -62,7 +62,7 @@
    * Generates the structured system prompt enforcing exact user requirements
    */
   function getSystemPrompt() {
-    return `You are an elite executive communications assistant and expert WhatsApp chat analyst.
+    return `You are an elite executive communications assistant and expert chat analyst.
 Analyze the provided conversation log and extract key intelligence with high precision.
 
 You MUST respond strictly with valid, well-formed JSON matching the following schema without any markdown surrounding text or preamble:
@@ -225,7 +225,7 @@ CRITICAL RULES:
         model: targetModel,
         messages: [
           { role: 'system', content: getSystemPrompt() },
-          { role: 'user', content: `Here is the WhatsApp chat transcript to analyze:\n\n---\n${formattedChatText}\n---` }
+          { role: 'user', content: `Here is the chat transcript to analyze:\n\n---\n${formattedChatText}\n---` }
         ],
         temperature: 0.2
       };
