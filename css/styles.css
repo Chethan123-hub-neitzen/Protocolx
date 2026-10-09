@@ -1,0 +1,160 @@
+/* Custom Styles & Animation Utilities for Chat Summarizer */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --wa-green: #25D366;
+  --wa-dark-green: #128C7E;
+  --wa-teal: #075E54;
+  --wa-light-green: #dcf8c6;
+  --wa-accent: #10b981;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card:hover {
+  border-color: rgba(37, 211, 102, 0.3);
+}
+
+/* Custom Drag Over Animation */
+.drag-over {
+  border-color: #25D366 !important;
+  background-color: rgba(37, 211, 102, 0.08) !important;
+  transform: scale(1.01);
+}
+
+/* Subtle Shimmer Effect for Loading state */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite ease-in-out;
+}
+
+/* Pulse Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(37, 211, 102, 0.5);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+/* Completed task line-through animation */
+.task-checkbox:checked + .task-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Highlight Flash for Message Verification */
+@keyframes highlight-flash {
+  0% {
+    background-color: rgba(37, 211, 102, 0.35);
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(37, 211, 102, 0.6);
+  }
+  50% {
+    background-color: rgba(37, 211, 102, 0.2);
+    transform: scale(1.01);
+  }
+  100% {
+    background-color: rgba(30, 41, 59, 0.85);
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(37, 211, 102, 0.3);
+  }
+}
+
+.highlight-flash {
+  animation: highlight-flash 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  border-color: #25D366 !important;
+}
+
+mark.chat-match {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: #fef08a;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-weight: 600;
+}
+
+/* Floating verification popup on text selection */
+#floatingVerifyPill {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .glass-card, .glass-panel {
+    border: 1px solid #ddd !important;
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+}

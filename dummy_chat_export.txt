@@ -1,0 +1,25 @@
+15/01/2025, 09:30 - Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+15/01/2025, 09:31 - Sarah (Product Manager): Good morning team! 👋 Today is our final sprint alignment for the Alpha release.
+15/01/2025, 09:32 - Sarah (Product Manager): We need to confirm whether the production deployment is still locked in for Friday at 6:00 PM.
+15/01/2025, 09:35 - Alex (Tech Lead): Morning everyone. We had a blocker late last night with the payment gateway webhooks in staging.
+15/01/2025, 09:36 - Alex (Tech Lead): Stripe was returning 422 Unprocessable Entity whenever users entered a promotional coupon code.
+15/01/2025, 09:38 - Priya (Frontend Dev): <Media omitted>
+15/01/2025, 09:39 - Priya (Frontend Dev): Here is the screenshot from the checkout page. The discount calculation was mismatching on decimal rounding.
+15/01/2025, 09:41 - David (DevOps Lead): I inspected the Redis cluster logs. The cache was holding outdated promotion rules from the previous holiday sale.
+15/01/2025, 09:43 - Alex (Tech Lead): Okay, DECISION: We are not pushing back the Friday release date. We will bypass the legacy discount microservice and upgrade directly to Stripe API v3.
+15/01/2025, 09:45 - Sarah (Product Manager): Great call Alex. If we fix this today, we stay on track for Friday 6:00 PM deployment. Marketing has scheduled the press release for Monday at 9:00 AM sharp.
+15/01/2025, 09:48 - Alex (Tech Lead): @David please flush the Redis cache namespace and allocate 8GB memory to the staging cluster before 2:00 PM today.
+15/01/2025, 09:50 - David (DevOps Lead): On it @Alex! I will run the memory upgrade and notify everyone in this chat by 1:30 PM.
+15/01/2025, 09:52 - Alex (Tech Lead): @Priya can you revise the checkout button loading spinner and fix the coupon error toast? We need that pull request submitted by 3:30 PM today.
+15/01/2025, 09:55 - Priya (Frontend Dev): Working on it now! PR will be submitted by 3:00 PM for code review.
+15/01/2025, 09:58 - Elena (QA Lead): image omitted
+15/01/2025, 10:00 - Elena (QA Lead): I noticed a UI glitch on iOS Safari where the virtual keyboard covers the checkout button. Can we fix this?
+15/01/2025, 10:02 - Alex (Tech Lead): DECISION: Defer the iOS keyboard overlap to hotfix v1.0.1 next week. It is non-blocking for Friday.
+15/01/2025, 10:05 - Sarah (Product Manager): @Elena please run the complete automated regression suite on staging build #512 as soon as Priya's PR gets merged, ideally starting by 4:00 PM today.
+15/01/2025, 10:08 - Elena (QA Lead): Understood Sarah. I will need around 2 hours to clear all payment gateways. Target QA sign-off deadline is 6:30 PM today.
+15/01/2025, 10:12 - Alex (Tech Lead): Awesome. Here is the checklist of hard deadlines for today:
+1. David: Redis cache flush & RAM upgrade by 1:30 PM
+2. Priya: Checkout PR submission by 3:00 PM
+3. Alex: Code review and staging merge by 3:45 PM
+4. Elena: Regression test pass and sign-off by 6:30 PM
+15/01/2025, 10:15 - Sarah (Product Manager): Thanks everyone! Let us regroup here at 5:00 PM for the final release go/no-go vote. 🚀

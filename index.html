@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Summarizer • 100% Private & Local</title>
+  <meta name="description" content="Client-side chat summarizer powered by fast Groq LLM inference. All parsing happens locally in your browser.">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              wa: '#25D366',
+              waDark: '#128C7E',
+              waTeal: '#075E54'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Canvas Confetti for completion celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+  <!-- Background decorative glows -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-wa/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="relative z-10 border-b border-slate-800/80 glass-panel sticky top-0 no-print">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-waDark to-brand-wa flex items-center justify-center shadow-lg shadow-brand-wa/20">
+          <i data-lucide="message-square-text" class="w-5 h-5 text-slate-950 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">Chat Summarizer</h1>
+            <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-brand-wa/15 text-brand-400 border border-brand-wa/30">Client-Side</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Zero-upload local parsing • Fast Groq AI intelligence</p>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Privacy Badge -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <i data-lucide="shield-check" class="w-4 h-4 text-brand-400"></i>
+          <span>100% Local Privacy</span>
+        </div>
+
+        <!-- Settings Button -->
+        <button id="btnToggleSettings" type="button" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs sm:text-sm font-medium transition text-slate-200 hover:text-white">
+          <i data-lucide="settings" class="w-4 h-4 text-brand-400"></i>
+          <span>Settings</span>
+          <span id="apiKeyStatusDot" class="w-2 h-2 rounded-full bg-rose-500"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="relative z-10 flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+    <!-- Privacy Banner Notice -->
+    <section class="glass-card rounded-2xl p-4 sm:p-5 border border-brand-wa/20 bg-gradient-to-r from-brand-waTeal/20 via-slate-900/60 to-slate-900/80">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="p-2 rounded-xl bg-brand-wa/10 text-brand-400 shrink-0 mt-0.5">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+              End-to-End Privacy Guaranteed
+              <span class="text-xs font-normal text-brand-300 bg-brand-500/10 px-2 py-0.5 rounded-full border border-brand-500/20">No Server Storage</span>
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">
+              Your chat files are read and processed entirely in your web browser via the native File API. The conversation data is transmitted <span class="font-semibold text-emerald-300">directly from your browser to your selected LLM API</span> (Groq), without passing through any intermediate backends.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <button id="btnTrySample" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-wa hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition shadow-md shadow-brand-wa/20">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Load Sample Chat</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Drawer / Panel (Collapsible) -->
+    <section id="settingsSection" class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-800 transition-all duration-300">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-slate-800 text-brand-400">
+            <i data-lucide="key" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">API Configuration (Bring Your Own Key)</h3>
+            <p class="text-xs text-slate-400">Stored safely in your browser's <code class="text-slate-300">localStorage</code></p>
+          </div>
+        </div>
+        <button id="btnCloseSettings" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+        <!-- API Key Input -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="inputApiKey" class="text-xs font-semibold text-slate-200">
+              Groq API Key <span class="text-rose-400">*</span>
+            </label>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" class="text-xs text-brand-400 hover:underline flex items-center gap-1">
+              Get free key <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="inputApiKey" 
+              placeholder="gsk_..." 
+              autocomplete="off"
+              class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 pr-20 transition"
+            >
+            <div class="absolute right-2 top-2 flex items-center gap-1">
+              <button type="button" id="btnToggleApiKeyVisibility" class="p-1 text-slate-400 hover:text-slate-200 rounded" title="Toggle visibility">
+                <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+              </button>
+              <button type="button" id="btnClearApiKey" class="p-1 text-slate-400 hover:text-rose-400 rounded" title="Clear key">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400">Groq provides lightning-fast open-weights inference (Llama 3.3 70B, Llama 3.1 8B).</p>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="selectModel" class="text-xs font-semibold text-slate-200">
+              LLM Model
+            </label>
+            <button type="button" id="btnFetchLiveModels" class="text-[11px] text-brand-400 hover:text-emerald-300 flex items-center gap-1 transition">
+              <i data-lucide="refresh-cw" id="fetchModelsIcon" class="w-3 h-3"></i>
+              <span id="fetchModelsLabel">Fetch live models</span>
+            </button>
+          </div>
+          <select 
+            id="selectModel" 
+            class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3.5 py-2.5 text-xs text-white transition"
+          >
+            <option value="llama-3.3-70b-versatile" selected>Llama 3.3 70B Versatile (Flagship • Recommended)</option>
+            <option value="llama3-70b-8192">Llama 3 70B (8192 Context • Stable)</option>
+            <option value="llama3-8b-8192">Llama 3 8B (8192 Context • Fast)</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B (Large 32K Context)</option>
+            <option value="gemma2-9b-it">Gemma 2 9B IT (Concise & Balanced)</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Tier Dependent)</option>
+            <option value="custom_model">Custom Model ID...</option>
+          </select>
+          <div id="customModelBox" class="hidden pt-1">
+            <input 
+              type="text" 
+              id="inputCustomModel" 
+              placeholder="e.g. llama-3.3-70b-versatile" 
+              class="w-full bg-slate-950 border border-slate-700 focus:border-brand-500 rounded-lg px-3 py-1.5 text-xs font-mono text-white placeholder-slate-500"
+            >
+          </div>
+          <p id="modelHelpText" class="text-[11px] text-slate-400">Default: Llama 3.3 70B. Click "Fetch live models" to sync available models with your key.</p>
+        </div>
+
+        <!-- Context Token Word Limit / Slicing Mechanism -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="selectWordLimit" class="text-xs font-semibold text-slate-200">
+              Context Slicing Budget (Recent Words)
+            </label>
+            <span id="labelWordLimitVal" class="text-xs text-brand-400 font-mono font-semibold">3,000 words</span>
+          </div>
+          <select 
+            id="selectWordLimit" 
+            class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3.5 py-2.5 text-xs text-white transition"
+          >
+            <option value="1500">Last 1,500 words (~2,000 tokens) - Ultra safe</option>
+            <option value="3000" selected>Last 3,000 words (~4,000 tokens) - Default balanced</option>
+            <option value="6000">Last 6,000 words (~8,000 tokens) - Detailed discussions</option>
+            <option value="12000">Last 12,000 words (~16,000 tokens) - Long sprint chats</option>
+            <option value="999999">Full Chat (No truncation)</option>
+          </select>
+          <p class="text-[11px] text-slate-400">Protects context limits by dynamically prioritizing the latest conversation turns.</p>
+        </div>
+
+        <!-- Custom API Endpoint (Adaptable LLM Provider) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="inputEndpoint" class="text-xs font-semibold text-slate-200">
+              API Endpoint URL (OpenAI-compatible)
+            </label>
+            <button type="button" id="btnResetEndpoint" class="text-[11px] text-slate-400 hover:text-brand-400">Reset default</button>
+          </div>
+          <input 
+            type="text" 
+            id="inputEndpoint" 
+            value="https://api.groq.com/openai/v1/chat/completions" 
+            class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white transition"
+          >
+          <p class="text-[11px] text-slate-400">Supports Groq, OpenAI, OpenRouter, or local Ollama (<code class="text-slate-300">http://localhost:11434/v1/chat/completions</code>).</p>
+        </div>
+      </div>
+
+      <!-- Settings Save Banner -->
+      <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+        <span id="saveNotice" class="text-xs text-emerald-400 flex items-center gap-1.5 opacity-0 transition-opacity">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Settings saved in local browser storage
+        </span>
+        <button id="btnSaveSettings" class="px-4 py-2 rounded-xl bg-brand-wa hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-brand-wa/20">
+          Save Settings
+        </button>
+      </div>
+    </section>
+
+    <!-- Upload & File Ingestion Section -->
+    <section id="uploadSection" class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 text-center relative overflow-hidden transition-all">
+      <input type="file" id="fileInput" accept=".txt,text/plain" class="hidden">
+      
+      <div id="dropZone" class="border-2 border-dashed border-slate-700 hover:border-brand-wa/60 rounded-2xl p-8 sm:p-12 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group">
+        <div class="w-16 h-16 rounded-2xl bg-slate-800 group-hover:bg-brand-wa/20 text-slate-400 group-hover:text-brand-wa flex items-center justify-center transition shadow-lg">
+          <i data-lucide="file-up" class="w-8 h-8 transition-transform group-hover:-translate-y-1"></i>
+        </div>
+        
+        <div class="space-y-1">
+          <h3 class="text-base sm:text-lg font-bold text-white">Upload Any Chat Export</h3>
+          <p class="text-xs sm:text-sm text-slate-400">
+            Drag and drop your exported <span class="font-mono text-emerald-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">.txt</span> file here, or click to browse
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800">
+            <i data-lucide="apple" class="w-3 h-3"></i> iOS Bracket Format Supported
+          </span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800">
+            <i data-lucide="smartphone" class="w-3 h-3"></i> Android Standard Format Supported
+          </span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800">
+            <i data-lucide="filter" class="w-3 h-3"></i> Auto-Cleans Media & System Noise
+          </span>
+        </div>
+
+        <!-- Help on how to export -->
+        <div class="pt-4 border-t border-slate-800/80 w-full max-w-md">
+          <details class="text-left text-xs text-slate-400 group/details">
+            <summary class="cursor-pointer text-slate-300 hover:text-white font-medium flex items-center justify-between">
+              <span>How do I export a WhatsApp chat?</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform group-open/details:rotate-180"></i>
+            </summary>
+            <div class="mt-2.5 space-y-1.5 pl-2 text-slate-400 leading-relaxed text-[11px]">
+              <p>• <strong>iPhone:</strong> Open chat &rarr; Tap contact/group name at top &rarr; Scroll down &rarr; Tap <em>Export Chat</em> &rarr; Choose <em>Without Media</em>.</p>
+              <p>• <strong>Android:</strong> Open chat &rarr; Tap 3 dots (&vellip;) &rarr; <em>More</em> &rarr; <em>Export chat</em> &rarr; Choose <em>Without Media</em>.</p>
+              <p>• Save or send the generated <code class="text-emerald-400 font-mono">_chat.txt</code> to your computer and drop it above.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Parsed Chat Inspector & Pre-Flight Stats Card (Hidden by default) -->
+    <section id="chatInspectorSection" class="hidden glass-card rounded-2xl p-5 sm:p-6 border border-slate-800 space-y-5">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+            <i data-lucide="file-check-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="inspectorFileName" class="text-sm font-bold text-white truncate max-w-xs sm:max-w-md">chat_export.txt</h3>
+              <span id="inspectorFileTypeBadge" class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">Parsed</span>
+            </div>
+            <p id="inspectorDateSpan" class="text-xs text-slate-400">Parsed successfully</p>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <button id="btnClearChat" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+            Change File
+          </button>
+          <button id="btnInstantDemoSummarize" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition" title="Instant client-side analysis without API key">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Instant Demo</span>
+          </button>
+          <button id="btnTriggerSummarize" type="button" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-wa to-emerald-400 hover:from-emerald-400 hover:to-brand-wa text-slate-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-brand-wa/25 hover:shadow-brand-wa/40">
+            <i data-lucide="sparkles" class="w-4 h-4 fill-slate-950"></i>
+            <span>Summarize with AI</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Stats Counters Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Messages</span>
+          <span id="statTotalMessages" class="text-xl font-extrabold text-white font-mono">0</span>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Participants</span>
+          <span id="statParticipantsCount" class="text-xl font-extrabold text-emerald-400 font-mono">0</span>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Total Words</span>
+          <span id="statTotalWords" class="text-xl font-extrabold text-white font-mono">0</span>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-3.5 border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Context Sliced</span>
+          <div class="flex items-baseline gap-1">
+            <span id="statSlicedWords" class="text-xl font-extrabold text-brand-400 font-mono">0</span>
+            <span class="text-[11px] text-slate-400">words</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slicing Status Banner -->
+      <div id="slicingAlertBanner" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="scissors" class="w-4 h-4 text-amber-400 shrink-0"></i>
+          <span id="slicingAlertText">Chat is sliced to the most recent messages to protect Groq context limits.</span>
+        </div>
+        <button id="btnAdjustBudget" class="text-xs font-semibold text-amber-300 underline hover:text-white">Adjust limit</button>
+      </div>
+
+      <!-- Participant Chips -->
+      <div class="space-y-1.5">
+        <span class="text-xs font-semibold text-slate-400">Detected Participants:</span>
+        <div id="inspectorParticipantsList" class="flex flex-wrap gap-1.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Collapsible Raw Transcript Preview -->
+      <details class="text-xs text-slate-400 border border-slate-800/80 rounded-xl bg-slate-900/50 group/preview">
+        <summary class="cursor-pointer p-3 font-medium text-slate-300 hover:text-white flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <i data-lucide="eye" class="w-4 h-4 text-slate-400"></i>
+            <span>Preview Cleaned LLM Payload (First & Last Messages)</span>
+          </span>
+          <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-open/preview:rotate-180"></i>
+        </summary>
+        <div class="p-3 pt-0">
+          <pre id="rawTranscriptPreview" class="bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed border border-slate-800"></pre>
+        </div>
+      </details>
+    </section>
+
+    <!-- Loading State View (Hidden by default) -->
+    <section id="loadingSection" class="hidden glass-card rounded-2xl p-8 sm:p-12 border border-brand-wa/30 text-center space-y-6">
+      <div class="relative w-20 h-20 mx-auto">
+        <div class="absolute inset-0 rounded-full border-4 border-slate-800"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-brand-wa border-t-transparent animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-brand-400">
+          <i data-lucide="bot" class="w-8 h-8 animate-pulse"></i>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-lg font-bold text-white">Synthesizing WhatsApp Intelligence</h3>
+        <p id="loadingStatusText" class="text-xs sm:text-sm text-slate-400">Sending parsed transcript to Groq Llama 3.3...</p>
+      </div>
+
+      <!-- Step Progress Bar -->
+      <div class="max-w-md mx-auto space-y-2">
+        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+          <div id="loadingProgressBar" class="bg-gradient-to-r from-brand-wa to-emerald-400 h-1.5 w-1/3 transition-all duration-500"></div>
+        </div>
+        <div class="flex justify-between text-[11px] text-slate-500 font-mono">
+          <span>Local Parse</span>
+          <span>Context Window</span>
+          <span>Groq Inference</span>
+          <span>Done</span>
+        </div>
+      </div>
+
+      <div class="skeleton-shimmer h-16 max-w-lg mx-auto rounded-xl"></div>
+    </section>
+
+    <!-- Error State Notice (Hidden by default) -->
+    <section id="errorSection" class="hidden glass-card rounded-2xl p-5 border border-rose-500/30 bg-rose-500/10 text-slate-200 space-y-3">
+      <div class="flex items-start gap-3">
+        <div class="p-2 rounded-xl bg-rose-500/20 text-rose-400 shrink-0">
+          <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-sm font-bold text-rose-300">Summarization Failed</h4>
+          <p id="errorMessageText" class="text-xs text-rose-200 leading-relaxed">An error occurred while contacting the Groq API.</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-2">
+        <button id="btnInstantDemoFromError" type="button" class="px-3.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>Instant Offline Summary (100% Reliable)</span>
+        </button>
+        <button id="btnSwitchToLlama33" type="button" class="px-3.5 py-1.5 rounded-lg bg-brand-wa hover:bg-emerald-400 text-slate-950 font-bold text-xs transition flex items-center gap-1 shadow-md shadow-brand-wa/20">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 fill-slate-950"></i>
+          <span>Auto-Switch to Llama 3.3 70B & Retry</span>
+        </button>
+        <button id="btnOpenSettingsFromError" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition border border-slate-700">
+          Change Model in Settings
+        </button>
+        <button id="btnRetrySummarize" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition">
+          Retry Request
+        </button>
+      </div>
+    </section>
+
+    <!-- Results Dashboard (Hidden by default) -->
+    <section id="resultsSection" class="hidden space-y-6">
+
+      <!-- Result Header Card -->
+      <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 id="resultChatTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Executive Summary</h2>
+            <span id="resultToneBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-brand-wa/15 text-brand-300 border border-brand-wa/30">Urgent & Productive</span>
+            <span id="resultModelBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Llama 3.3 70B</span>
+          </div>
+          <p id="resultTimeframe" class="text-xs text-slate-400">Generated directly in-browser</p>
+        </div>
+
+        <!-- Export & Action Toolbar -->
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <button id="btnOpenTranscriptModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold transition border border-emerald-500/30">
+            <i data-lucide="message-square-search" class="w-3.5 h-3.5 text-brand-400"></i>
+            <span>Chat Transcript & Verifier</span>
+          </button>
+          <button id="btnCopyMarkdown" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition border border-slate-700">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copyMarkdownLabel">Copy Markdown</span>
+          </button>
+          <button id="btnExportJSON" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition border border-slate-700">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export JSON</span>
+          </button>
+          <button id="btnPrintReport" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition border border-slate-700">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print</span>
+          </button>
+          <button id="btnSummarizeNew" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-brand-wa hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-sm">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>New Chat</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Intelligence Cards Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Column 1: Executive Overview & Decisions (2 Columns wide on LG) -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- 1. High-Level Summary Card -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-800">
+              <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white tracking-wide">High-Level Executive Summary</h3>
+                <p class="text-xs text-slate-400">Core narrative & discussion outcome</p>
+              </div>
+            </div>
+            <div id="resultHighLevelSummary" class="text-sm text-slate-200 leading-relaxed font-normal bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 2. Prioritized Decisions Card -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                  <i data-lucide="check-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white tracking-wide">Important Decisions & Outcomes</h3>
+                  <p class="text-xs text-slate-400">Prioritized by urgency & business impact</p>
+                </div>
+              </div>
+              <span id="decisionCountBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+            </div>
+            
+            <div id="resultDecisionsList" class="space-y-3">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 3. Action Items & Tasks Card (Interactive Checklist) -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-blue-500/10 text-blue-400">
+                  <i data-lucide="list-todo" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white tracking-wide">Action Items & Tasks Missed</h3>
+                  <p class="text-xs text-slate-400">Interactive checklist with assignees and due dates</p>
+                </div>
+              </div>
+              <span id="actionItemsCountBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+            </div>
+
+            <div id="resultActionItemsList" class="space-y-2.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Mentions & Deadlines (1 Column wide on LG) -->
+        <div class="space-y-6">
+
+          <!-- 4. Highlighted @Mentions Card -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                  <i data-lucide="at-sign" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white tracking-wide">Highlighted @Mentions</h3>
+                  <p class="text-xs text-slate-400">Direct mentions and requests</p>
+                </div>
+              </div>
+              <span id="mentionsCountBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+            </div>
+
+            <div id="resultMentionsList" class="space-y-3">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 5. Key Deadlines & Milestones Card -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-rose-500/10 text-rose-400">
+                  <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white tracking-wide">Deadlines & Milestones</h3>
+                  <p class="text-xs text-slate-400">Time-sensitive obligations</p>
+                </div>
+              </div>
+              <span id="deadlinesCountBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+            </div>
+
+            <div id="resultDeadlinesList" class="space-y-2.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 6. Participant Activity Breakdown Card -->
+          <div class="glass-card rounded-2xl p-6 border border-slate-800/80 space-y-4">
+            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-800">
+              <div class="p-2 rounded-xl bg-slate-800 text-slate-400">
+                <i data-lucide="users" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white tracking-wide">Participants Activity</h3>
+                <p class="text-xs text-slate-400">Message contribution distribution</p>
+              </div>
+            </div>
+
+            <div id="resultParticipantsBreakdown" class="space-y-2 text-xs">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t border-slate-800/80 mt-12 py-6 glass-panel no-print">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <i data-lucide="lock" class="w-3.5 h-3.5 text-brand-400"></i>
+        <span>Runs 100% locally in your web browser. No telemetry or server storage.</span>
+      </div>
+      <div>
+        <span>Built for fast inference with Groq LLM API</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Text Selection "Find in Chat" Button -->
+  <button id="floatingVerifyPill" type="button" class="hidden fixed z-50 px-3 py-1.5 rounded-full bg-slate-900 border border-brand-wa shadow-2xl shadow-brand-wa/30 text-xs font-semibold text-white flex items-center gap-1.5 hover:bg-slate-800 transition-transform active:scale-95">
+    <i data-lucide="search" class="w-3.5 h-3.5 text-brand-400"></i>
+    <span>Verify quote in original chat</span>
+  </button>
+
+  <!-- Interactive Chat Transcript & Ground-Truth Verifier Modal -->
+  <div id="transcriptModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md">
+    <div class="glass-panel w-full max-w-4xl h-[90vh] rounded-2xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden bg-slate-900/95">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-wa/15 text-brand-400 flex items-center justify-center border border-brand-wa/30">
+            <i data-lucide="message-square-search" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              Chat Transcript & Ground-Truth Verifier
+              <span id="modalActiveFileBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">chat.txt</span>
+            </h3>
+            <p class="text-xs text-slate-400">Confirm timestamps, senders, and exact wording for any line from the summary</p>
+          </div>
+        </div>
+        <button id="btnCloseTranscriptModal" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Live Search & Filtering Controls -->
+      <div class="p-3 sm:p-4 bg-slate-950/60 border-b border-slate-800 shrink-0 space-y-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+            <input 
+              type="text" 
+              id="inputTranscriptSearch" 
+              placeholder="Search chat for quotes, keywords, dates (e.g. '12/03/24', 'Friday', 'Stripe')..." 
+              class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl pl-9 pr-9 py-2 text-xs text-white placeholder-slate-500 transition"
+            >
+            <button id="btnClearTranscriptSearch" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-white p-0.5">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Participant Filter -->
+          <div class="w-full sm:w-56 shrink-0">
+            <select 
+              id="selectTranscriptParticipant" 
+              class="w-full bg-slate-900 border border-slate-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-3 py-2 text-xs text-white transition"
+            >
+              <option value="">All Participants</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span id="transcriptMatchCounter" class="font-medium text-slate-300">Showing all messages</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-emerald-400 flex items-center gap-1">
+              <i data-lucide="clock" class="w-3 h-3"></i> Every message displays exact date & time sent
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Stream List -->
+      <div id="transcriptMessagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+        <!-- Rendered dynamically by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+        <span class="text-[11px]">Clicking <strong>"Verify in Chat"</strong> on any summary item highlights its exact timestamp and sender.</span>
+        <button id="btnFooterCloseTranscriptModal" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts in dependency order -->
+  <script src="js/parser.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/sample-data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+18/02/2025, 08:45 - Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+18/02/2025, 08:46 - Marcus (Event Director): Morning everyone! ☕ We are exactly 6 days out from the Global Tech Summit 2025 in San Francisco.
+18/02/2025, 08:48 - Marcus (Event Director): We have three critical fires to extinguish today: the main stage AV contract, badge printing delays, and VIP dinner venue confirmation.
+18/02/2025, 08:50 - Aisha (Operations): <Media omitted>
+18/02/2025, 08:51 - Aisha (Operations): Bad news from the original catering vendor. Their head chef has fallen ill and they can only fulfill 50% of the VIP reception menu.
+18/02/2025, 08:54 - Chloe (Marketing Lead): Oh no! That reception has 180 enterprise sponsors and tier-1 investors attending. We cannot cut corners there.
+18/02/2025, 08:57 - Aisha (Operations): I already reached out to Gourmet Collective. They can take over the entire 3-course dinner, but it will cost an extra $4,200.
+18/02/2025, 09:02 - Marcus (Event Director): DECISION: Approved. Dip into the emergency contingency budget. Aisha, lock in Gourmet Collective immediately before they take another booking.
+18/02/2025, 09:05 - Aisha (Operations): On it Marcus. I will have the countersigned catering contract submitted by 1:00 PM today.
+18/02/2025, 09:10 - Liam (Design Director): image omitted
+18/02/2025, 09:12 - Liam (Design Director): Here is the updated badge lanyard design. We moved the QR code to the bottom right for faster NFC contactless badge scanning at the turnstiles.
+18/02/2025, 09:15 - Carlos (CEO / Keynote): @Liam the new badge layout looks super clean. Much better than last year's clutter. Approved from my side.
+18/02/2025, 09:18 - Liam (Design Director): Thanks Carlos! The print shop in Oakland needs the final vector artwork by 3:00 PM today to guarantee delivery by Monday morning.
+18/02/2025, 09:22 - Marcus (Event Director): @Liam please upload the final CMYK vector package to Box and send the print link before 2:30 PM just to be safe.
+18/02/2025, 09:25 - Liam (Design Director): Will do @Marcus, sending the final proof by 2:00 PM.
+18/02/2025, 09:30 - Chloe (Marketing Lead): @Marcus what is our decision on the keynote duration? Carlos asked if we could shorten the opening speech to allow more audience Q&A.
+18/02/2025, 09:33 - Carlos (CEO / Keynote): Yes, I'd prefer 35 minutes for the keynote and 15 minutes of live Q&A with the audience. 50 minutes of pure monologuing loses people.
+18/02/2025, 09:36 - Marcus (Event Director): DECISION: We officially adopt the 35m Keynote + 15m Q&A format. Chloe, update the master program on the website and mobile app.
+18/02/2025, 09:40 - Chloe (Marketing Lead): Got it! Updating the schedule now. Also, when are we sending the final attendee logistics email blast?
+18/02/2025, 09:43 - Marcus (Event Director): @Chloe send the logistics email blast tomorrow (Wednesday) at 9:00 AM EST. That hits European attendees in the afternoon and US morning.
+18/02/2025, 09:46 - Chloe (Marketing Lead): Understood @Marcus. Draft is ready, I will schedule it for tomorrow 9:00 AM.
+18/02/2025, 09:50 - Aisha (Operations): Quick update on stage lighting: The AV crew requested access to Moscone Center at 6:00 AM on Monday for sound check.
+18/02/2025, 09:53 - Marcus (Event Director): Approved. Summary of hard deadlines for everyone today:
+- Aisha: Countersign Gourmet Collective catering contract by 1:00 PM
+- Liam: Deliver print-ready badge artwork by 2:00 PM
+- Chloe: Update website agenda with new 35/15m keynote split by 4:00 PM
+- Carlos & Marcus: Rehearse keynote deck on Zoom at 5:30 PM
+18/02/2025, 09:56 - Carlos (CEO / Keynote): See everyone on Zoom at 5:30 PM. Great work staying calm under pressure team! 👏
